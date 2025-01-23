@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'dart:math';
+import 'package:flutter/material.dart';
+
 class SolveSudokuScreen extends StatefulWidget {
   const SolveSudokuScreen({super.key});
 
@@ -20,7 +23,7 @@ class _SolveSudokuScreenState extends State<SolveSudokuScreen>
   @override
   void initState() {
     super.initState();
-    _initializeGrid();
+    _generateDynamicPuzzle();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -31,27 +34,85 @@ class _SolveSudokuScreenState extends State<SolveSudokuScreen>
     );
   }
 
-  void _initializeGrid() {
-    // Sample Sudoku Generator (static for simplicity)
-    final List<List<int>> basePuzzle = [
-      [5, 3, 0, 0, 7, 0, 0, 0, 0],
-      [6, 0, 0, 1, 9, 5, 0, 0, 0],
-      [0, 9, 8, 0, 0, 0, 0, 6, 0],
-      [8, 0, 0, 0, 6, 0, 0, 0, 3],
-      [4, 0, 0, 8, 0, 3, 0, 0, 1],
-      [7, 0, 0, 0, 2, 0, 0, 0, 6],
-      [0, 6, 0, 0, 0, 0, 2, 8, 0],
-      [0, 0, 0, 4, 1, 9, 0, 0, 5],
-      [0, 0, 0, 0, 8, 0, 0, 7, 9],
-    ];
+  /// Generates a new dynamic puzzle and stores it in `grid`
+  void _generateDynamicPuzzle() {
+    List<List<int>> basePuzzle = _generateBasePuzzle();
+    _shuffleSudoku(basePuzzle);
+    _removeNumbersForPuzzle(basePuzzle, 40); // Remove 40 cells for the puzzle
 
     setState(() {
       for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
           grid[i][j] = basePuzzle[i][j];
+          solutionGrid[i][j] = basePuzzle[i][j]; // Store the solution
         }
       }
     });
+  }
+
+  /// Generates a valid base Sudoku grid
+  List<List<int>> _generateBasePuzzle() {
+    List<List<int>> baseGrid = List.generate(9, (_) => List.generate(9, (_) => 0));
+    List<int> nums = List.generate(9, (i) => i + 1);
+    int boxSize = 3;
+
+    for (int row = 0; row < 9; row++) {
+      for (int col = 0; col < 9; col++) {
+        baseGrid[row][col] = nums[(boxSize * (row % boxSize) + row ~/ boxSize + col) % 9];
+      }
+    }
+    return baseGrid;
+  }
+
+  /// Shuffles rows, columns, and numbers to create a randomized Sudoku puzzle
+  void _shuffleSudoku(List<List<int>> grid) {
+    Random rand = Random();
+
+    // Shuffle numbers within the grid
+    List<int> numShuffle = List.generate(9, (i) => i + 1)..shuffle(rand);
+    for (int i = 0; i < 9; i++) {
+      for (int j = 0; j < 9; j++) {
+        grid[i][j] = numShuffle[grid[i][j] - 1];
+      }
+    }
+
+    // Shuffle rows within each box
+    for (int box = 0; box < 3; box++) {
+      int startRow = box * 3;
+      List<int> rows = [0, 1, 2]..shuffle(rand);
+      for (int i = 0; i < 3; i++) {
+        grid[startRow + i] = List.from(grid[startRow + rows[i]]);
+      }
+    }
+
+    // Shuffle columns within each box
+    for (int box = 0; box < 3; box++) {
+      int startCol = box * 3;
+      List<int> cols = [0, 1, 2]..shuffle(rand);
+      for (int row = 0; row < 9; row++) {
+        List<int> newRow = List.generate(9, (i) => grid[row][i]);
+        for (int i = 0; i < 3; i++) {
+          newRow[startCol + i] = grid[row][startCol + cols[i]];
+        }
+        grid[row] = newRow;
+      }
+    }
+  }
+
+  /// Removes a given number of cells from the grid to create the puzzle
+  void _removeNumbersForPuzzle(List<List<int>> grid, int emptyCells) {
+    Random rand = Random();
+    int removed = 0;
+
+    while (removed < emptyCells) {
+      int row = rand.nextInt(9);
+      int col = rand.nextInt(9);
+
+      if (grid[row][col] != 0) {
+        grid[row][col] = 0;
+        removed++;
+      }
+    }
   }
 
   void _selectTile(int row, int col) {
@@ -167,7 +228,7 @@ class _SolveSudokuScreenState extends State<SolveSudokuScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sudoku Game'),
+        title: Text('Dynamic Sudoku'),
         centerTitle: true,
       ),
       body: Padding(
