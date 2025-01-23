@@ -94,12 +94,17 @@ class _PlaySudokuScreenState extends State<PlaySudokuScreen> {
         int row = index ~/ 9;
         int col = index % 9;
         bool isSelected = (row == selectedRow && col == selectedCol);
+        bool isInSelectedRowOrCol = (row == selectedRow || col == selectedCol);
 
         return GestureDetector(
           onTap: () => _selectTile(row, col),
           child: Container(
             decoration: BoxDecoration(
-              color: isSelected ? Colors.teal.shade200 : Colors.white,
+              color: isSelected
+                  ? Colors.teal.shade200
+                  : isInSelectedRowOrCol
+                  ? Colors.teal.shade50
+                  : Colors.white,
               border: Border.all(color: Colors.black26),
             ),
             child: Center(
