@@ -1,125 +1,245 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart'; // Add this dependency to pubspec.yaml
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+void main() => runApp(SudokuApp());
 
-  // This widget is the root of your application.
+class SudokuApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      debugShowCheckedModeBanner: false,
+      title: 'Animated Sudoku App',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: SudokuPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class SudokuPage extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _SudokuPageState createState() => _SudokuPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _SudokuPageState extends State<SudokuPage> with SingleTickerProviderStateMixin {
+  // Pre-filled Sudoku puzzle
+  final List<List<int?>> puzzle = [
+    [5, 3, null, null, 7, null, null, null, null],
+    [6, null, null, 1, 9, 5, null, null, null],
+    [null, 9, 8, null, null, null, null, 6, null],
+    [8, null, null, null, 6, null, null, null, 3],
+    [4, null, null, 8, null, 3, null, null, 1],
+    [7, null, null, null, 2, null, null, null, 6],
+    [null, 6, null, null, null, null, 2, 8, null],
+    [null, null, null, 4, 1, 9, null, null, 5],
+    [null, null, null, null, 8, null, null, 7, 9],
+  ];
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  // Current state of the Sudoku grid
+  late List<List<int?>> grid;
+  late AnimationController _successAnimationController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Copy puzzle to grid
+    grid = List.generate(
+      9,
+          (i) => List<int?>.from(puzzle[i]),
+    );
+
+    // Initialize success animation controller
+    _successAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+  }
+
+  @override
+  void dispose() {
+    _successAnimationController.dispose();
+    super.dispose();
+  }
+
+  // Check if the solution is valid
+  bool isValidSolution() {
+    for (int i = 0; i < 9; i++) {
+      if (!_isValidRow(i) || !_isValidColumn(i) || !_isValidBox(i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _isValidRow(int row) {
+    final values = <int>{};
+    for (int col = 0; col < 9; col++) {
+      final val = grid[row][col];
+      if (val != null && !values.add(val)) return false;
+    }
+    return true;
+  }
+
+  bool _isValidColumn(int col) {
+    final values = <int>{};
+    for (int row = 0; row < 9; row++) {
+      final val = grid[row][col];
+      if (val != null && !values.add(val)) return false;
+    }
+    return true;
+  }
+
+  bool _isValidBox(int box) {
+    final values = <int>{};
+    final startRow = (box ~/ 3) * 3;
+    final startCol = (box % 3) * 3;
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        final val = grid[startRow + i][startCol + j];
+        if (val != null && !values.add(val)) return false;
+      }
+    }
+    return true;
+  }
+
+  // Build Sudoku grid
+  Widget _buildGrid() {
+    return Column(
+      children: List.generate(9, (row) {
+        return Row(
+          children: List.generate(9, (col) {
+            final value = grid[row][col];
+            final isEditable = puzzle[row][col] == null;
+
+            return Expanded(
+              child: GestureDetector(
+                onTap: isEditable
+                    ? () {
+                  _showNumberPicker(row, col);
+                }
+                    : null,
+                child: Animate(
+                  effects: const [
+                    ScaleEffect(), // Add a subtle scale effect when grid rebuilds
+                  ],
+                  child: Container(
+                    margin: EdgeInsets.all(1),
+                    height: 40,
+                    color: isEditable ? Colors.white : Colors.grey[300],
+                    alignment: Alignment.center,
+                    child: Text(
+                      value?.toString() ?? '',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        );
+      }),
+    );
+  }
+
+  // Number picker dialog
+  void _showNumberPicker(int row, int col) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Pick a Number'),
+          content: Wrap(
+            children: List.generate(9, (i) {
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    grid[row][col] = i + 1;
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: Animate(
+                  effects: const [
+                    FadeEffect(), // Add a fade effect for picking numbers
+                  ],
+                  child: Container(
+                    margin: EdgeInsets.all(5),
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${i + 1}',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        );
+      },
+    );
+  }
+
+  // Show success animation
+  void _showSuccessAnimation() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        _successAnimationController.reset();
+        _successAnimationController.forward();
+        return Center(
+          child: ScaleTransition(
+            scale: _successAnimationController,
+            child: Icon(Icons.star, size: 100, color: Colors.yellow),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      appBar: AppBar(title: Text('Animated Sudoku')),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+          children: [
+            Expanded(child: _buildGrid()),
+            ElevatedButton(
+              onPressed: () {
+                final isValid = isValidSolution();
+                if (isValid) {
+                  _showSuccessAnimation();
+                } else {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text('Invalid Solution'),
+                        content: Text('Please check your solution.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text('OK'),
+                          )
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+              child: Text('Validate Solution'),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
+
