@@ -1,245 +1,212 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart'; // Add this dependency to pubspec.yaml
-
-void main() => runApp(SudokuApp());
+void main() {
+  runApp(SudokuApp());
+}
 
 class SudokuApp extends StatelessWidget {
+  const SudokuApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Sudoku',
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primarySwatch: Colors.indigo,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
       debugShowCheckedModeBanner: false,
-      title: 'Animated Sudoku App',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: SudokuPage(),
+      home: SudokuHomePage(),
     );
   }
 }
 
-class SudokuPage extends StatefulWidget {
+class SudokuHomePage extends StatefulWidget {
+  const SudokuHomePage({super.key});
+
   @override
-  _SudokuPageState createState() => _SudokuPageState();
+  _SudokuHomePageState createState() => _SudokuHomePageState();
 }
 
-class _SudokuPageState extends State<SudokuPage> with SingleTickerProviderStateMixin {
-  // Pre-filled Sudoku puzzle
-  final List<List<int?>> puzzle = [
-    [5, 3, null, null, 7, null, null, null, null],
-    [6, null, null, 1, 9, 5, null, null, null],
-    [null, 9, 8, null, null, null, null, 6, null],
-    [8, null, null, null, 6, null, null, null, 3],
-    [4, null, null, 8, null, 3, null, null, 1],
-    [7, null, null, null, 2, null, null, null, 6],
-    [null, 6, null, null, null, null, 2, 8, null],
-    [null, null, null, 4, 1, 9, null, null, 5],
-    [null, null, null, null, 8, null, null, 7, 9],
-  ];
+class _SudokuHomePageState extends State<SudokuHomePage>
+    with SingleTickerProviderStateMixin {
+  final List<List<int>> grid = List.generate(9, (_) => List.generate(9, (_) => 0));
+  final List<List<int>> solutionGrid = List.generate(9, (_) => List.generate(9, (_) => 0));
+  int selectedRow = -1;
+  int selectedCol = -1;
 
-  // Current state of the Sudoku grid
-  late List<List<int?>> grid;
-  late AnimationController _successAnimationController;
+  late AnimationController _controller;
+  late Animation<double> _tileAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Copy puzzle to grid
-    grid = List.generate(
-      9,
-          (i) => List<int?>.from(puzzle[i]),
-    );
-
-    // Initialize success animation controller
-    _successAnimationController = AnimationController(
+    _initializeGrid();
+    _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 500),
+    );
+    _tileAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _initializeGrid() {
+    // Sample Sudoku Generator (static for simplicity)
+    final List<List<int>> basePuzzle = [
+      [5, 3, 0, 0, 7, 0, 0, 0, 0],
+      [6, 0, 0, 1, 9, 5, 0, 0, 0],
+      [0, 9, 8, 0, 0, 0, 0, 6, 0],
+      [8, 0, 0, 0, 6, 0, 0, 0, 3],
+      [4, 0, 0, 8, 0, 3, 0, 0, 1],
+      [7, 0, 0, 0, 2, 0, 0, 0, 6],
+      [0, 6, 0, 0, 0, 0, 2, 8, 0],
+      [0, 0, 0, 4, 1, 9, 0, 0, 5],
+      [0, 0, 0, 0, 8, 0, 0, 7, 9],
+    ];
+
+    setState(() {
+      for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+          grid[i][j] = basePuzzle[i][j];
+        }
+      }
+    });
+  }
+
+  void _selectTile(int row, int col) {
+    setState(() {
+      selectedRow = row;
+      selectedCol = col;
+    });
+  }
+
+  void _updateTile(int value) {
+    if (selectedRow >= 0 && selectedCol >= 0) {
+      setState(() {
+        grid[selectedRow][selectedCol] = value;
+        _controller.reset();
+        _controller.forward();
+      });
+    }
+  }
+
+  Widget _buildGridTile(int row, int col) {
+    bool isSelected = (row == selectedRow && col == selectedCol);
+
+    return GestureDetector(
+      onTap: () => _selectTile(row, col),
+      child: AnimatedBuilder(
+        animation: _tileAnimation,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? Colors.indigo.withOpacity(_tileAnimation.value)
+                  : Colors.white,
+              border: Border.all(
+                color: isSelected ? Colors.indigo : Colors.grey,
+                width: 1,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                grid[row][col] == 0 ? '' : grid[row][col].toString(),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSudokuGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      itemCount: 81,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 9,
+        childAspectRatio: 1.0,
+        mainAxisSpacing: 2,
+        crossAxisSpacing: 2,
+      ),
+      itemBuilder: (context, index) {
+        int row = index ~/ 9;
+        int col = index % 9;
+        return _buildGridTile(row, col);
+      },
+    );
+  }
+
+  Widget _buildNumberPad() {
+    return GridView.builder(
+      shrinkWrap: true,
+      itemCount: 9,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 1.0,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+      ),
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onTap: () => _updateTile(index + 1),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.indigo,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                (index + 1).toString(),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   @override
   void dispose() {
-    _successAnimationController.dispose();
+    _controller.dispose();
     super.dispose();
-  }
-
-  // Check if the solution is valid
-  bool isValidSolution() {
-    for (int i = 0; i < 9; i++) {
-      if (!_isValidRow(i) || !_isValidColumn(i) || !_isValidBox(i)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  bool _isValidRow(int row) {
-    final values = <int>{};
-    for (int col = 0; col < 9; col++) {
-      final val = grid[row][col];
-      if (val != null && !values.add(val)) return false;
-    }
-    return true;
-  }
-
-  bool _isValidColumn(int col) {
-    final values = <int>{};
-    for (int row = 0; row < 9; row++) {
-      final val = grid[row][col];
-      if (val != null && !values.add(val)) return false;
-    }
-    return true;
-  }
-
-  bool _isValidBox(int box) {
-    final values = <int>{};
-    final startRow = (box ~/ 3) * 3;
-    final startCol = (box % 3) * 3;
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
-        final val = grid[startRow + i][startCol + j];
-        if (val != null && !values.add(val)) return false;
-      }
-    }
-    return true;
-  }
-
-  // Build Sudoku grid
-  Widget _buildGrid() {
-    return Column(
-      children: List.generate(9, (row) {
-        return Row(
-          children: List.generate(9, (col) {
-            final value = grid[row][col];
-            final isEditable = puzzle[row][col] == null;
-
-            return Expanded(
-              child: GestureDetector(
-                onTap: isEditable
-                    ? () {
-                  _showNumberPicker(row, col);
-                }
-                    : null,
-                child: Animate(
-                  effects: const [
-                    ScaleEffect(), // Add a subtle scale effect when grid rebuilds
-                  ],
-                  child: Container(
-                    margin: EdgeInsets.all(1),
-                    height: 40,
-                    color: isEditable ? Colors.white : Colors.grey[300],
-                    alignment: Alignment.center,
-                    child: Text(
-                      value?.toString() ?? '',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
-        );
-      }),
-    );
-  }
-
-  // Number picker dialog
-  void _showNumberPicker(int row, int col) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Pick a Number'),
-          content: Wrap(
-            children: List.generate(9, (i) {
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    grid[row][col] = i + 1;
-                  });
-                  Navigator.of(context).pop();
-                },
-                child: Animate(
-                  effects: const [
-                    FadeEffect(), // Add a fade effect for picking numbers
-                  ],
-                  child: Container(
-                    margin: EdgeInsets.all(5),
-                    width: 40,
-                    height: 40,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '${i + 1}',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-        );
-      },
-    );
-  }
-
-  // Show success animation
-  void _showSuccessAnimation() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        _successAnimationController.reset();
-        _successAnimationController.forward();
-        return Center(
-          child: ScaleTransition(
-            scale: _successAnimationController,
-            child: Icon(Icons.star, size: 100, color: Colors.yellow),
-          ),
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Animated Sudoku')),
+      appBar: AppBar(
+        title: Text('Sudoku Game'),
+        centerTitle: true,
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Expanded(child: _buildGrid()),
-            ElevatedButton(
-              onPressed: () {
-                final isValid = isValidSolution();
-                if (isValid) {
-                  _showSuccessAnimation();
-                } else {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text('Invalid Solution'),
-                        content: Text('Please check your solution.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text('OK'),
-                          )
-                        ],
-                      );
-                    },
-                  );
-                }
-              },
-              child: Text('Validate Solution'),
+            Expanded(child: _buildSudokuGrid()),
+            SizedBox(height: 16),
+            Text(
+              "Choose a Number:",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            SizedBox(height: 8),
+            Expanded(child: _buildNumberPad()),
           ],
         ),
       ),
     );
   }
 }
-
