@@ -37,9 +37,10 @@ class SudokuController extends GetxController with GetSingleTickerProviderStateM
   void onInit() {
     super.onInit();
 
+    /// Start timer
     startTimer();
 
-    // Generate dynamic puzzle for "Solve" mode
+    /// Generate a dynamic puzzle if in "solve" mode
     if (screenType == SudokuScreenType.solve) {
       _generateDynamicPuzzle();
     }
@@ -92,6 +93,7 @@ class SudokuController extends GetxController with GetSingleTickerProviderStateM
     startTimer();
   }
 
+  /// Restart the game
   void restartGame() {
     isPaused.value = false;
     isGameOver(false);
@@ -262,6 +264,11 @@ class SudokuController extends GetxController with GetSingleTickerProviderStateM
     grid.value = List.generate(9, (_) => List.generate(9, (_) => 0));
     selectedRow.value = -1;
     selectedCol.value = -1;
+
+    // Regenerate puzzle for "Solve" mode
+    if (screenType == SudokuScreenType.solve) {
+      _generateDynamicPuzzle();
+    }
   }
 }
 
