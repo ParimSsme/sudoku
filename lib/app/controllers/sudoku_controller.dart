@@ -97,6 +97,8 @@ class SudokuController extends GetxController with GetSingleTickerProviderStateM
   }
 
   void restartGame() {
+    isPaused.value = false;
+
     // Reset timer
     resetTimer();
 
