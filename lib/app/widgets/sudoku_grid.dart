@@ -38,7 +38,7 @@ class SudokuGrid extends GetView<SudokuController> {
                   color: isSelected
                       ? AppColors.background
                       : isInSelectedRowOrCol
-                      ? const Color(0x806d80a1) // Highlight for row/col
+                      ? const Color(0xcc6d80a1) // Highlight for row/col
                       : Colors.white,
                   border: Border(
                     top: BorderSide(
@@ -65,12 +65,16 @@ class SudokuGrid extends GetView<SudokuController> {
                         ? ''
                         : controller.grid[row][col].toString(),
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize:  isSelected
+                          ? 28
+                          : isInSelectedRowOrCol
+                          ? 28
+                          : 20,
                       fontWeight: FontWeight.bold,
                       color: isSelected
                           ? Colors.white
                           : isInSelectedRowOrCol
-                          ? Colors.black
+                          ? AppColors.background
                           : Colors.black,
                     ),
                   ),
