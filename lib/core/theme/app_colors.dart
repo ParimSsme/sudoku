@@ -24,7 +24,7 @@ class AppColors {
   static const Color success = Color(0xFF4CAF50);
 
   /// Card Colors
-  static const Color card = Color(0xFF45588E);
+  static const Color card = Color(0xFF595128);
   static const Color cardShadowColor = Color(0x408A959E);
 
   /// Text Button Colors
