@@ -139,8 +139,13 @@ class SudokuScreen extends StatelessWidget {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Game Paused'),
-          content: const Text('The game is paused. Press Resume to continue.'),
+          title: Text('Game Paused', style: kLargeTitleStyle.copyWith(
+            color: Colors.black,
+          ),),
+          content: Text('The game is paused. Press Resume to continue.', style: kSmallTitleStyle.copyWith(
+              color: Colors.black,
+              fontWeight: FontWeight.w500
+          ),),
           actions: [
             TextButton(
               onPressed: () {
