@@ -33,5 +33,6 @@ class AppColors {
 
   /// Other Colors
   static final Color icon = Colors.grey.shade900;
+  static final Color border = Color(0xff6d80a1);
 
 }
