@@ -20,26 +20,47 @@ class SudokuScreen extends StatelessWidget {
                 ? 'Solve Sudoku'
                 : 'Play Sudoku'),
             centerTitle: true,
+            actions: [
+              // Pause Button
+              IconButton(
+                onPressed: () {
+                  controller.pauseTimer();
+                  _showPauseDialog(context, controller);
+                },
+                icon: const Icon(Icons.pause),
+                tooltip: 'Pause',
+              ),
+            ],
           ),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                // Sudoku grid
-                Expanded(child: SudokuGrid()),
+                // Timer Display
+                Obx(() {
+                  final minutes = (controller.elapsedTime.value ~/ 60).toString().padLeft(2, '0');
+                  final seconds = (controller.elapsedTime.value % 60).toString().padLeft(2, '0');
+                  return Text(
+                    'Time Elapsed: $minutes:$seconds',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  );
+                }),
+                const SizedBox(height: 16),
+                // Sudoku Grid
+                SizedBox(height: 410, child: SudokuGrid()),
                 const SizedBox(height: 16),
                 const Text(
                   "Choose a Number:",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                // Number pad
+                // Number Pad
                 NumberPad(),
-                if (screenType == SudokuScreenType.solve)
-                  ElevatedButton(
-                    onPressed: controller.clearGrid,
-                    child: const Text('Clear Grid'),
-                  ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: controller.clearGrid,
+                  child: const Text('Clear Grid'),
+                ),
               ],
             ),
           ),
@@ -47,4 +68,33 @@ class SudokuScreen extends StatelessWidget {
       },
     );
   }
+
+  void _showPauseDialog(BuildContext context, SudokuController controller) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Game Paused'),
+          content: const Text('The game is paused. Press Resume to continue.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                controller.resumeTimer();
+                Navigator.pop(context);
+              },
+              child: const Text('Resume'),
+            ),
+            TextButton(
+              onPressed: () {
+                controller.resetTimer();
+                Navigator.pop(context);
+              },
+              child: const Text('Restart'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
+

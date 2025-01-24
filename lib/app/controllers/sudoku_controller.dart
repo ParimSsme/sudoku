@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -25,6 +27,11 @@ class SudokuController extends GetxController with SingleGetTickerProviderMixin 
   // Confetti controller
   late ConfettiController confettiController;
 
+  // Timer-related variables
+  var elapsedTime = 0.obs; // Time in seconds
+  Timer? _timer;
+  var isPaused = false.obs;
+
   final SudokuScreenType screenType;
 
   SudokuController({required this.screenType});
@@ -32,6 +39,8 @@ class SudokuController extends GetxController with SingleGetTickerProviderMixin 
   @override
   void onInit() {
     super.onInit();
+
+    startTimer();
 
     // Generate dynamic puzzle for "Solve" mode
     if (screenType == SudokuScreenType.solve) {
@@ -54,9 +63,36 @@ class SudokuController extends GetxController with SingleGetTickerProviderMixin 
 
   @override
   void onClose() {
+    _timer?.cancel();
     animationController.dispose();
     confettiController.dispose();
     super.onClose();
+  }
+
+  // Starts the timer
+  void startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!isPaused.value) {
+        elapsedTime.value++;
+      }
+    });
+  }
+
+  // Pauses the timer
+  void pauseTimer() {
+    isPaused.value = true;
+  }
+
+  // Resumes the timer
+  void resumeTimer() {
+    isPaused.value = false;
+  }
+
+  // Resets the timer
+  void resetTimer() {
+    _timer?.cancel();
+    elapsedTime.value = 0;
+    startTimer();
   }
 
   /// Generates a new dynamic puzzle
