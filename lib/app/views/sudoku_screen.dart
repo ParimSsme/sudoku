@@ -197,8 +197,19 @@ class SudokuScreen extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(title),
-          content: Text(content),
+          title: Text(
+            title,
+            style: kLargeTitleStyle.copyWith(
+              color: title == 'Failed' ? AppColors.error : AppColors.success,
+            ),
+          ),
+          content: Text(
+            content,
+            style: kSmallTitleStyle.copyWith(
+              color: Colors.black,
+              fontWeight: FontWeight.w500
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () {
