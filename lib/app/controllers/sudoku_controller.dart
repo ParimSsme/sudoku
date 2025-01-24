@@ -11,7 +11,7 @@ import 'package:get/get.dart';
 
 enum SudokuScreenType { play, solve }
 
-class SudokuController extends GetxController with SingleGetTickerProviderMixin {
+class SudokuController extends GetxController with GetSingleTickerProviderStateMixin {
   // Sudoku grid
   final grid = List.generate(9, (_) => List.generate(9, (_) => 0)).obs;
   final solutionGrid = List.generate(9, (_) => List.generate(9, (_) => 0)).obs;
@@ -168,6 +168,44 @@ class SudokuController extends GetxController with SingleGetTickerProviderMixin 
         removed++;
       }
     }
+  }
+
+  bool isGridFilled() {
+    for (var row in grid) {
+      if (row.contains(0)) return false;
+    }
+    return true;
+  }
+
+  bool isSolutionCorrect() {
+    // Example validation logic: customize as per Sudoku rules
+    for (int i = 0; i < 9; i++) {
+      if (!_isValidSet(grid[i]) || !_isValidSet(_getColumn(i)) || !_isValidSet(_getSubgrid(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  List<int> _getColumn(int colIndex) {
+    return [for (int row = 0; row < 9; row++) grid[row][colIndex]];
+  }
+
+  List<int> _getSubgrid(int subgridIndex) {
+    int startRow = (subgridIndex ~/ 3) * 3;
+    int startCol = (subgridIndex % 3) * 3;
+    List<int> subgrid = [];
+    for (int row = startRow; row < startRow + 3; row++) {
+      for (int col = startCol; col < startCol + 3; col++) {
+        subgrid.add(grid[row][col]);
+      }
+    }
+    return subgrid;
+  }
+
+  bool _isValidSet(List<int> numbers) {
+    List<int> sorted = numbers.where((num) => num != 0).toList()..sort();
+    return sorted.length == sorted.toSet().length;
   }
 
   // Select a grid tile

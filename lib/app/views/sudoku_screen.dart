@@ -4,6 +4,7 @@ import '../controllers/sudoku_controller.dart';
 import '../widgets/number_pad.dart';
 import '../widgets/sudoku_grid.dart';
 
+
 class SudokuScreen extends StatelessWidget {
   final SudokuScreenType screenType;
 
@@ -61,6 +62,12 @@ class SudokuScreen extends StatelessWidget {
                   onPressed: controller.clearGrid,
                   child: const Text('Clear Grid'),
                 ),
+                const SizedBox(height: 16),
+                // Solve Button
+                ElevatedButton(
+                  onPressed: () => _checkSolution(context, controller),
+                  child: const Text('Solve'),
+                ),
               ],
             ),
           ),
@@ -96,5 +103,34 @@ class SudokuScreen extends StatelessWidget {
       },
     );
   }
+
+  void _checkSolution(BuildContext context, SudokuController controller) {
+    if (!controller.isGridFilled()) {
+      _showResultDialog(context, 'Failed', 'The grid is not completely filled.');
+    } else if (!controller.isSolutionCorrect()) {
+      _showResultDialog(context, 'Failed', 'The solution is incorrect.');
+    } else {
+      _showResultDialog(context, 'Success', 'Congratulations! The solution is correct.');
+    }
+  }
+
+  void _showResultDialog(BuildContext context, String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
+
 
