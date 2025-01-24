@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sudoku/core/theme/app_text_theme.dart';
+import '../../core/theme/app_colors.dart';
 import '../controllers/sudoku_controller.dart';
 import '../widgets/number_pad.dart';
+import '../widgets/pause_play_button.dart';
 import '../widgets/sudoku_grid.dart';
 import 'package:confetti/confetti.dart';
 
@@ -17,21 +20,20 @@ class SudokuScreen extends StatelessWidget {
       builder: (controller) {
         return Scaffold(
           appBar: AppBar(
-            title: Text(screenType == SudokuScreenType.solve
-                ? 'Solve Sudoku'
-                : 'Play Sudoku'),
-            centerTitle: true,
-            actions: [
-              // Pause Button
-              IconButton(
-                onPressed: () {
-                  controller.pauseTimer();
-                  _showPauseDialog(context, controller);
-                },
-                icon: const Icon(Icons.pause),
-                tooltip: 'Pause',
+            leading: IconButton(
+              onPressed: () => Get.back(),
+              icon: Icon(
+                Icons.arrow_back_ios_new_outlined,
+                color: AppColors.icon,
+                size: 30,
               ),
-            ],
+            ),
+            title: Text(
+              screenType == SudokuScreenType.solve
+                  ? 'Solve Sudoku'
+                  : 'Play Sudoku',
+            ),
+            centerTitle: true,
           ),
           body: Stack(
             children: [
@@ -47,37 +49,59 @@ class SudokuScreen extends StatelessWidget {
                       final seconds = (controller.elapsedTime.value % 60)
                           .toString()
                           .padLeft(2, '0');
-                      return Text(
-                        'Time Elapsed: $minutes:$seconds',
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                      return RichText(
+                        text: TextSpan(
+                          text: '$minutes ',
+                          style: kMediumTitleStyle,
+                          children: <TextSpan>[
+                            const TextSpan(text: 'min', style: kBodyTextStyle),
+                            TextSpan(
+                                text: '  $seconds ', style: kMediumTitleStyle),
+                            const TextSpan(text: 'sec', style: kBodyTextStyle),
+                          ],
+                        ),
                       );
+                      // Text(
+                      //   'Time Elapsed: $minutes:$seconds',
+                      //   style: const TextStyle(
+                      //       fontSize: 20, fontWeight: FontWeight.bold),
+                      // );
                     }),
                     const SizedBox(height: 16),
                     // Sudoku Grid
                     SizedBox(
-                      height: 394,
+                      height: 395,
                       child: SudokuGrid(),
                     ),
                     const SizedBox(height: 16),
                     const Text(
                       "Choose a Number:",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: kSmallTitleStyle,
                     ),
                     const SizedBox(height: 8),
                     // Number Pad
                     NumberPad(),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: controller.clearGrid,
-                      child: const Text('Clear Grid'),
-                    ),
-                    const SizedBox(height: 16),
-                    // Solve Button
-                    ElevatedButton(
-                      onPressed: () => _checkSolution(context, controller),
-                      child: const Text('Solve'),
+                    const Spacer(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 15,
+                      children: [
+                        TextButton(
+                          onPressed: controller.clearGrid,
+                          child: const Text('Erase'),
+                        ),
+                        CircleIconButton(
+                          onPressed: () {
+                            controller.pauseTimer();
+                            _showPauseDialog(context, controller);
+                          },
+                          icon: Icons.pause,
+                        ),
+                        TextButton(
+                          onPressed: () => _checkSolution(context, controller),
+                          child: const Text('Verify'),
+                        ),
+                      ],
                     ),
                   ],
                 ),

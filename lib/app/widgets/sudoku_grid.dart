@@ -8,10 +8,11 @@ class SudokuGrid extends GetView<SudokuController> {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    return Container(
       decoration: BoxDecoration(
-        color: Colors.white
+        color: Colors.white,
       ),
+      padding: const EdgeInsets.all(1.0),
       child: GridView.builder(
         shrinkWrap: true,
         itemCount: 81,
