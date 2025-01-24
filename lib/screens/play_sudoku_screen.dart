@@ -43,22 +43,22 @@ class _PlaySudokuScreenState extends State<PlaySudokuScreen> {
   }
 
   bool _solveSudoku(List<List<int>> board) {
-    // for (int row = 0; row < 9; row++) {
-    //   for (int col = 0; col < 9; col++) {
-    //     if (board[row][col] == 0) {
-    //       for (int num = 1; num <= 9; num++) {
-    //         if (_isValid(board, row, col, num)) {
-    //           board[row][col] = num;
-    //           if (_solveSudoku(board)) {
-    //             return true;
-    //           }
-    //           board[row][col] = 0;
-    //         }
-    //       }
-    //       return false;
-    //     }
-    //   }
-    // }
+    for (int row = 0; row < 9; row++) {
+      for (int col = 0; col < 9; col++) {
+        if (board[row][col] == 0) {
+          for (int num = 1; num <= 9; num++) {
+            if (_isValid(board, row, col, num)) {
+              board[row][col] = num;
+              if (_solveSudoku(board)) {
+                return true;
+              }
+              board[row][col] = 0;
+            }
+          }
+          return false;
+        }
+      }
+    }
     return true;
   }
 
