@@ -96,6 +96,30 @@ class SudokuController extends GetxController with GetSingleTickerProviderStateM
     startTimer();
   }
 
+  void restartGame() {
+    // Reset timer
+    resetTimer();
+
+    // Reset grid
+    grid.value = List.generate(9, (_) => List.generate(9, (_) => 0));
+    selectedRow.value = -1;
+    selectedCol.value = -1;
+
+    // Regenerate puzzle for "Solve" mode
+    if (screenType == SudokuScreenType.solve) {
+      _generateDynamicPuzzle();
+    }
+
+    // Stop confetti if it was playing
+    if (showConfetti.value) {
+      confettiController.stop();
+      showConfetti.value = false;
+    }
+
+    // Refresh the grid
+    grid.refresh();
+  }
+
   /// Generates a new dynamic puzzle
   void _generateDynamicPuzzle() {
     List<List<int>> basePuzzle = _generateBasePuzzle();

@@ -73,7 +73,7 @@ class SudokuScreen extends StatelessWidget {
                       height: 395,
                       child: SudokuGrid(),
                     ),
-                    const SizedBox(height: 16),
+                    const Spacer(),
                     const Text(
                       "Choose a Number:",
                       style: kSmallTitleStyle,
@@ -151,7 +151,7 @@ class SudokuScreen extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                controller.resetTimer();
+                controller.restartGame();
                 Navigator.pop(context);
               },
               child: const Text('Restart'),
