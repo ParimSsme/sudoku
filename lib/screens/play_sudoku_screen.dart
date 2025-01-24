@@ -1,5 +1,25 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
+import 'package:confetti/confetti.dart'; // Add this package in pubspec.yaml
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Sudoku Solver',
+      home: const PlaySudokuScreen(),
+    );
+  }
+}
+
 class PlaySudokuScreen extends StatefulWidget {
   const PlaySudokuScreen({super.key});
 
@@ -8,34 +28,40 @@ class PlaySudokuScreen extends StatefulWidget {
 }
 
 class _PlaySudokuScreenState extends State<PlaySudokuScreen> {
-  // 9x9 grid for Sudoku puzzle input
   List<List<int>> grid = List.generate(9, (_) => List.generate(9, (_) => 0));
 
   int selectedRow = -1;
   int selectedCol = -1;
 
-  // Backtracking algorithm to solve the puzzle
-  bool _solveSudoku(List<List<int>> board) {
-    for (int row = 0; row < 9; row++) {
-      for (int col = 0; col < 9; col++) {
-        if (board[row][col] == 0) {
-          for (int num = 1; num <= 9; num++) {
-            if (_isValid(board, row, col, num)) {
-              board[row][col] = num;
-              if (_solveSudoku(board)) {
-                return true;
-              }
-              board[row][col] = 0;
-            }
-          }
-          return false; // No valid number found
-        }
-      }
-    }
-    return true; // Puzzle solved
+  final ConfettiController _confettiController =
+  ConfettiController(duration: const Duration(seconds: 3));
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
   }
 
-  // Check if placing `num` at (row, col) is valid
+  bool _solveSudoku(List<List<int>> board) {
+    // for (int row = 0; row < 9; row++) {
+    //   for (int col = 0; col < 9; col++) {
+    //     if (board[row][col] == 0) {
+    //       for (int num = 1; num <= 9; num++) {
+    //         if (_isValid(board, row, col, num)) {
+    //           board[row][col] = num;
+    //           if (_solveSudoku(board)) {
+    //             return true;
+    //           }
+    //           board[row][col] = 0;
+    //         }
+    //       }
+    //       return false;
+    //     }
+    //   }
+    // }
+    return true;
+  }
+
   bool _isValid(List<List<int>> board, int row, int col, int num) {
     for (int i = 0; i < 9; i++) {
       if (board[row][i] == num || board[i][col] == num) {
@@ -56,8 +82,36 @@ class _PlaySudokuScreenState extends State<PlaySudokuScreen> {
 
   void _solvePuzzle() {
     setState(() {
-      _solveSudoku(grid);
+      bool isSolved = _solveSudoku(grid);
+      if (isSolved) {
+        _showSuccessDialog();
+        _confettiController.play();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('The puzzle cannot be solved!'),
+          ),
+        );
+      }
     });
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Congratulations!'),
+        content: const Text('You successfully solved the Sudoku puzzle! 🎉'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _clearGrid() {
@@ -158,60 +212,72 @@ class _PlaySudokuScreenState extends State<PlaySudokuScreen> {
     );
   }
 
+  Widget _buildConfetti() {
+    return Align(
+      alignment: Alignment.center,
+      child: ConfettiWidget(
+        confettiController: _confettiController,
+        blastDirectionality: BlastDirectionality.explosive,
+        shouldLoop: true,
+        colors: const [
+          Colors.red,
+          Colors.blue,
+          Colors.green,
+          Colors.orange,
+          Colors.purple,
+          Colors.yellow,
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Solve Sudoku'),
+        title: const Text('Solve Sudoku'),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: _buildGrid(),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Select a number:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: _buildNumberPad(),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               children: [
-                ElevatedButton(
-                  onPressed: _solvePuzzle,
-                  child: Text('Solve'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 24,
-                    ),
+                Expanded(
+                  child: _buildGrid(),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Select a number:',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: _clearGrid,
-                  child: Text('Clear'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 24,
+                const SizedBox(height: 8),
+                Expanded(
+                  child: _buildNumberPad(),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _solvePuzzle,
+                      child: const Text('Solve'),
                     ),
-                  ),
+                    ElevatedButton(
+                      onPressed: _clearGrid,
+                      child: const Text('Clear'),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          _buildConfetti(),
+        ],
       ),
     );
   }
