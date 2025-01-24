@@ -2,6 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 
 
+import 'package:flutter/material.dart';
+import 'package:confetti/confetti.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Sudoku Solver',
+      home: const PlaySudokuScreen(),
+    );
+  }
+}
+
 class PlaySudokuScreen extends StatefulWidget {
   const PlaySudokuScreen({super.key});
 
@@ -24,26 +44,6 @@ class _PlaySudokuScreenState extends State<PlaySudokuScreen> {
     super.dispose();
   }
 
-  bool _solveSudoku(List<List<int>> board) {
-    for (int row = 0; row < 9; row++) {
-      for (int col = 0; col < 9; col++) {
-        if (board[row][col] == 0) {
-          for (int num = 1; num <= 9; num++) {
-            if (_isValid(board, row, col, num)) {
-              board[row][col] = num;
-              if (_solveSudoku(board)) {
-                return true;
-              }
-              board[row][col] = 0;
-            }
-          }
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
   bool _isValid(List<List<int>> board, int row, int col, int num) {
     for (int i = 0; i < 9; i++) {
       if (board[row][i] == num || board[i][col] == num) {
@@ -62,20 +62,52 @@ class _PlaySudokuScreenState extends State<PlaySudokuScreen> {
     return true;
   }
 
-  void _solvePuzzle() {
-    setState(() {
-      bool isSolved = _solveSudoku(grid);
-      if (isSolved) {
+  bool _isGridFilled() {
+    for (int row = 0; row < 9; row++) {
+      for (int col = 0; col < 9; col++) {
+        if (grid[row][col] == 0) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  bool _isSudokuSolved() {
+    for (int row = 0; row < 9; row++) {
+      for (int col = 0; col < 9; col++) {
+        int num = grid[row][col];
+        // Temporarily remove the number from the grid to validate it
+        grid[row][col] = 0;
+        if (!_isValid(grid, row, col, num)) {
+          grid[row][col] = num; // Restore the number
+          return false;
+        }
+        grid[row][col] = num; // Restore the number
+      }
+    }
+    return true;
+  }
+
+  void _checkAndValidateSudoku() {
+    if (_isGridFilled()) {
+      if (_isSudokuSolved()) {
         _showSuccessDialog();
         _confettiController.play();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('The puzzle cannot be solved!'),
+            content: Text('The Sudoku puzzle is incorrect. Try again!'),
           ),
         );
       }
-    });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill all the tiles before validating!'),
+        ),
+      );
+    }
   }
 
   void _showSuccessDialog() {
@@ -200,7 +232,7 @@ class _PlaySudokuScreenState extends State<PlaySudokuScreen> {
       child: ConfettiWidget(
         confettiController: _confettiController,
         blastDirectionality: BlastDirectionality.explosive,
-        shouldLoop: true,
+        shouldLoop: false,
         colors: const [
           Colors.red,
           Colors.blue,
@@ -246,8 +278,8 @@ class _PlaySudokuScreenState extends State<PlaySudokuScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     ElevatedButton(
-                      onPressed: _solvePuzzle,
-                      child: const Text('Solve'),
+                      onPressed: _checkAndValidateSudoku,
+                      child: const Text('Validate'),
                     ),
                     ElevatedButton(
                       onPressed: _clearGrid,
