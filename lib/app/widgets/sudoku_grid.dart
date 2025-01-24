@@ -8,41 +8,54 @@ class SudokuGrid extends GetView<SudokuController> {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      itemCount: 81,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 9,
-        mainAxisSpacing: 2,
-        crossAxisSpacing: 2,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white
       ),
-      itemBuilder: (context, index) {
-        int row = index ~/ 9; // Row index
-        int col = index % 9;  // Column index
+      child: GridView.builder(
+        shrinkWrap: true,
+        itemCount: 81,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 9, // 9 tiles per row
+          mainAxisSpacing: 0,
+          crossAxisSpacing: 0,
+        ),
+        itemBuilder: (context, index) {
+          int row = index ~/ 9; // Row index
+          int col = index % 9; // Column index
 
-        return GestureDetector(
-          onTap: () => controller.selectTile(row, col),
-          child: Obx(() {
-            bool isSelected = row == controller.selectedRow.value && col == controller.selectedCol.value;
-            bool isInSelectedRow = row == controller.selectedRow.value;
-            bool isInSelectedCol = col == controller.selectedCol.value;
-            bool isInSelectedRowOrCol = isInSelectedRow || isInSelectedCol;
+          return GestureDetector(
+            onTap: () => controller.selectTile(row, col),
+            child: Obx(() {
+              bool isSelected = row == controller.selectedRow.value && col == controller.selectedCol.value;
+              bool isInSelectedRow = row == controller.selectedRow.value;
+              bool isInSelectedCol = col == controller.selectedCol.value;
+              bool isInSelectedRowOrCol = isInSelectedRow || isInSelectedCol;
 
-            return DecoratedBox(
-              decoration: BoxDecoration(
-                color: Colors.white,
-              ),
-              child: Container(
+              return Container(
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.background
                       : isInSelectedRowOrCol
-                      ? Color(0x806d80a1)
+                      ? const Color(0x806d80a1) // Highlight for row/col
                       : Colors.white,
-                  border: Border.all(
-                    color: isSelected
-                        ? Colors.indigo
-                        : Colors.grey,
+                  border: Border(
+                    top: BorderSide(
+                      color: AppColors.background,
+                      width: row % 3 == 0 ? 3.5 : 1, // Thicker top border for subgrids
+                    ),
+                    left: BorderSide(
+                      color: AppColors.background,
+                      width: col % 3 == 0 ? 3.5 : 1, // Thicker left border for subgrids
+                    ),
+                    bottom: BorderSide(
+                      color: AppColors.background,
+                      width: (row + 1) % 3 == 0 ? 3.5 : 1, // Thicker bottom border for subgrids
+                    ),
+                    right: BorderSide(
+                      color: AppColors.background,
+                      width: (col + 1) % 3 == 0 ? 3.5 : 1, // Thicker right border for subgrids
+                    ),
                   ),
                 ),
                 child: Center(
@@ -61,11 +74,11 @@ class SudokuGrid extends GetView<SudokuController> {
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
-        );
-      },
+              );
+            }),
+          );
+        },
+      ),
     );
   }
 }

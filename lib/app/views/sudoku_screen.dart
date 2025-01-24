@@ -55,7 +55,10 @@ class SudokuScreen extends StatelessWidget {
                     }),
                     const SizedBox(height: 16),
                     // Sudoku Grid
-                    SizedBox(height: 410, child: SudokuGrid()),
+                    SizedBox(
+                      height: 394,
+                      child: SudokuGrid(),
+                    ),
                     const SizedBox(height: 16),
                     const Text(
                       "Choose a Number:",
