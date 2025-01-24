@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:sudoku/screens/home_screen.dart';
+import 'package:get/get.dart';
+import 'package:sudoku/app/views/home_screen.dart';
+import 'package:sudoku/app/views/play_sudoku_screen.dart';
+import 'app/bindings/sudoku_binding.dart';
 
 void main() {
-  runApp(SudokuApp());
+  runApp(const MyApp());
 }
 
-class SudokuApp extends StatelessWidget {
-  const SudokuApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Sudoku App',
-      theme: ThemeData(
-        primarySwatch: Colors.teal,
-      ),
-      home: HomeScreen(),
+      title: 'Sudoku Solver',
+      initialBinding: SudokuBinding(),
+      home: const PlaySudokuScreen(),
     );
   }
 }
+
