@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sudoku/screens/play_sudoku_screen.dart';
-import 'package:sudoku/screens/solve_sudoku_screen.dart';
-
+import 'package:get/get.dart';
+import 'package:sudoku/app/views/sudoku_screen.dart';
+import '../bindings/sudoku_binding.dart';
+import '../controllers/sudoku_controller.dart';
 import 'learn_sudoku_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -36,9 +37,9 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PlaySudokuScreen()),
+                Get.to(
+                      () => const SudokuScreen(screenType: SudokuScreenType.play),
+                  binding: SudokuBinding(screenType: SudokuScreenType.play),
                 );
               },
               child: Text(
@@ -55,9 +56,9 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SolveSudokuScreen()),
+                Get.to(
+                      () => const SudokuScreen(screenType: SudokuScreenType.solve),
+                  binding: SudokuBinding(screenType: SudokuScreenType.solve),
                 );
               },
               child: Text(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/sudoku_controller.dart';
 
+
 class NumberPad extends GetView<SudokuController> {
   @override
   Widget build(BuildContext context) {
@@ -14,20 +15,18 @@ class NumberPad extends GetView<SudokuController> {
         crossAxisSpacing: 8,
       ),
       itemBuilder: (context, index) {
-        int number = index + 1;
-
         return GestureDetector(
-          onTap: () => controller.updateTile(number),
+          onTap: () => controller.updateTile(index + 1),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.teal,
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.indigo,
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Center(
               child: Text(
-                number.toString(),
+                (index + 1).toString(),
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -39,3 +38,4 @@ class NumberPad extends GetView<SudokuController> {
     );
   }
 }
+
