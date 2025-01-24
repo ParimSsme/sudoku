@@ -1,93 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:sudoku/app/views/sudoku_screen.dart';
-import '../bindings/sudoku_binding.dart';
-import '../controllers/sudoku_controller.dart';
-import 'learn_sudoku_screen.dart';
+import 'package:sudoku/core/assets/app_icon_assets.dart';
+import 'package:sudoku/core/theme/app_text_theme.dart';
+import '../../core/theme/app_colors.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../controllers/home_controller.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final HomeController controller = Get.put(HomeController());
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Sudoku Deluxe'),
-        centerTitle: true,
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 20,
           children: [
-            Text(
-              'Welcome to Sudoku Deluxe!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
+            _buildLogo(),
+            _buildTitle(),
+            const SizedBox(height: 30),
+            _buildMenuButton(
+              label: 'Play Sudoku',
+              icon: const Icon(Icons.play_arrow),
+              onPressed: controller.navigateToPlaySudoku,
             ),
-            SizedBox(height: 40),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+            _buildMenuButton(
+              label: 'Solve a Sudoku',
+              icon: const Icon(Icons.play_arrow),
+              onPressed: controller.navigateToSolveSudoku,
+            ),
+            _buildMenuButton(
+              label: 'Learn Sudoku',
+              icon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: SvgPicture.asset(
+                  AppIconAssets.learn,
+                  height: 50,
+                  width: 50,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.textButtonForeground,
+                    BlendMode.srcATop,
+                  ),
                 ),
               ),
-              onPressed: () {
-                Get.to(
-                      () => const SudokuScreen(screenType: SudokuScreenType.play),
-                  binding: SudokuBinding(screenType: SudokuScreenType.play),
-                );
-              },
-              child: Text(
-                'Play Sudoku',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                Get.to(
-                      () => const SudokuScreen(screenType: SudokuScreenType.solve),
-                  binding: SudokuBinding(screenType: SudokuScreenType.solve),
-                );
-              },
-              child: Text(
-                'Solve a Sudoku',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LearnSudokuScreen()),
-                );
-              },
-              child: Text(
-                'Learn Sudoku',
-                style: TextStyle(fontSize: 18),
-              ),
+              onPressed: controller.navigateToLearnSudoku,
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return SvgPicture.asset(
+      AppIconAssets.logo,
+      height: 180,
+    );
+  }
+
+  Widget _buildTitle() {
+    return Text(
+      'Welcome to Sudoku!',
+      style: kLargeTitleStyle,
+      textAlign: TextAlign.center,
+    );
+  }
+
+  Widget _buildMenuButton({
+    required String label,
+    required Widget icon,
+    required VoidCallback onPressed,
+  }) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: icon,
+      label: Text(label),
     );
   }
 }
