@@ -14,37 +14,42 @@ class SudokuGrid extends GetView<SudokuController> {
         crossAxisSpacing: 2,
       ),
       itemBuilder: (context, index) {
-        int row = index ~/ 9;
-        int col = index % 9;
+        int row = index ~/ 9; // Row index
+        int col = index % 9;  // Column index
 
         return GestureDetector(
           onTap: () => controller.selectTile(row, col),
-          child: AnimatedBuilder(
-            animation: controller.tileAnimation,
-            builder: (context, child) {
-              return Obx(() => Container(
-                decoration: BoxDecoration(
-                  color: row == controller.selectedRow.value && col == controller.selectedCol.value
-                      ? Colors.indigo.withOpacity(controller.tileAnimation.value)
-                      : Colors.white,
-                  border: Border.all(
-                    color: row == controller.selectedRow.value && col == controller.selectedCol.value ? Colors.indigo : Colors.grey,
+          child: Obx(() {
+            bool isSelected = row == controller.selectedRow.value && col == controller.selectedCol.value;
+            bool isInSelectedRow = row == controller.selectedRow.value;
+            bool isInSelectedCol = col == controller.selectedCol.value;
+
+            return Container(
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Colors.indigo.withOpacity(controller.tileAnimation.value)
+                    : (isInSelectedRow || isInSelectedCol)
+                    ? Colors.indigo.withOpacity(0.2)
+                    : Colors.white,
+                border: Border.all(
+                  color: isSelected
+                      ? Colors.indigo
+                      : Colors.grey,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  controller.grid[row][col] == 0
+                      ? ''
+                      : controller.grid[row][col].toString(),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                child: Center(
-                  child: Text(
-                    controller.grid[row][col] == 0
-                        ? ''
-                        : controller.grid[row][col].toString(),
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),);
-            },
-          ),
+              ),
+            );
+          }),
         );
       },
     );
