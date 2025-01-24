@@ -261,6 +261,7 @@ class SudokuController extends GetxController with GetSingleTickerProviderStateM
 
   // Clear the grid
   void clearGrid() {
+    resetTimer();
     grid.value = List.generate(9, (_) => List.generate(9, (_) => 0));
     selectedRow.value = -1;
     selectedCol.value = -1;
