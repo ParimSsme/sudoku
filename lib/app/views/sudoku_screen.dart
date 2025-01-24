@@ -120,7 +120,7 @@ class SudokuScreen extends StatelessWidget {
             blastDirectionality: BlastDirectionality.explosive,
             shouldLoop: true,
             emissionFrequency: 0.05,
-            numberOfParticles: 30,
+            numberOfParticles: 50,
             gravity: 0.1,
           ),
         ),
@@ -168,19 +168,19 @@ class SudokuScreen extends StatelessWidget {
   }
 
   void _checkSolution(BuildContext context, SudokuController controller) {
-    // if (!controller.isGridFilled()) {
-    //   _showResultDialog(
-    //     context: context,
-    //     title: 'Failed',
-    //     content: 'The grid is not completely filled.',
-    //   );
-    // } else if (!controller.isSolutionCorrect()) {
-    //   _showResultDialog(
-    //     context: context,
-    //     title: 'Failed',
-    //     content: 'The solution is incorrect.',
-    //   );
-    // } else {
+    if (!controller.isGridFilled()) {
+      _showResultDialog(
+        context: context,
+        title: 'Failed',
+        content: 'The grid is not completely filled.',
+      );
+    } else if (!controller.isSolutionCorrect()) {
+      _showResultDialog(
+        context: context,
+        title: 'Failed',
+        content: 'The solution is incorrect.',
+      );
+    } else {
     controller.celebrate();
     _showResultDialog(
       context: context,
@@ -188,7 +188,7 @@ class SudokuScreen extends StatelessWidget {
       content: 'Congratulations! The solution is correct.',
       onClose: () => controller.showConfetti(false),
     );
-    // }
+    }
   }
 
   void _showResultDialog({
