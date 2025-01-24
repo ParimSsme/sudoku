@@ -90,12 +90,16 @@ class SudokuScreen extends StatelessWidget {
                           onPressed: controller.clearGrid,
                           child: const Text('Erase'),
                         ),
-                        CircleIconButton(
-                          onPressed: () {
-                            controller.pauseTimer();
-                            _showPauseDialog(context, controller);
-                          },
-                          icon: Icons.pause,
+                        Obx(
+                          () => CircleIconButton(
+                            onPressed: () {
+                              controller.pauseTimer();
+                              _showPauseDialog(context, controller);
+                            },
+                            icon: controller.isPaused.value
+                                ? Icons.play_arrow
+                                : Icons.pause,
+                          ),
                         ),
                         TextButton(
                           onPressed: () => _checkSolution(context, controller),
@@ -132,6 +136,7 @@ class SudokuScreen extends StatelessWidget {
   void _showPauseDialog(BuildContext context, SudokuController controller) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
           title: const Text('Game Paused'),
