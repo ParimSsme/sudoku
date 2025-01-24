@@ -34,7 +34,7 @@ class SudokuScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 // Number pad
-                Expanded(child: NumberPad()),
+                NumberPad(),
                 if (screenType == SudokuScreenType.solve)
                   ElevatedButton(
                     onPressed: controller.clearGrid,
