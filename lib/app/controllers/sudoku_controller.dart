@@ -1,13 +1,8 @@
 import 'dart:async';
-
 import 'package:get/get.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
-
-import 'dart:math';
 import 'package:confetti/confetti.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 enum SudokuScreenType { play, solve }
 
@@ -27,6 +22,7 @@ class SudokuController extends GetxController with GetSingleTickerProviderStateM
   /// Confetti-related variables
   late ConfettiController confettiController;
   var showConfetti = false.obs;
+  var isGameOver = false.obs;
 
   // Timer-related variables
   var elapsedTime = 0.obs; // Time in seconds
@@ -98,6 +94,7 @@ class SudokuController extends GetxController with GetSingleTickerProviderStateM
 
   void restartGame() {
     isPaused.value = false;
+    isGameOver(false);
 
     // Reset timer
     resetTimer();
@@ -253,9 +250,11 @@ class SudokuController extends GetxController with GetSingleTickerProviderStateM
     }
   }
 
-  void showConfettiEffect() {
+  void celebrate() {
     showConfetti.value = true;
     confettiController.play();
+    isGameOver(true);
+    pauseTimer();
   }
 
   // Clear the grid

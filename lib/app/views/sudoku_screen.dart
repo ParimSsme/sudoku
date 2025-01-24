@@ -61,11 +61,6 @@ class SudokuScreen extends StatelessWidget {
                           ],
                         ),
                       );
-                      // Text(
-                      //   'Time Elapsed: $minutes:$seconds',
-                      //   style: const TextStyle(
-                      //       fontSize: 20, fontWeight: FontWeight.bold),
-                      // );
                     }),
                     const SizedBox(height: 16),
                     // Sudoku Grid
@@ -138,30 +133,58 @@ class SudokuScreen extends StatelessWidget {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Game Paused', style: kLargeTitleStyle.copyWith(
-            color: Colors.black,
-          ),),
-          content: Text('The game is paused. Press Resume to continue.', style: kSmallTitleStyle.copyWith(
-              color: Colors.black,
-              fontWeight: FontWeight.w500
-          ),),
-          actions: [
-            TextButton(
-              onPressed: () {
-                controller.resumeTimer();
-                Navigator.pop(context);
-              },
-              child: const Text('Resume'),
+        return Obx(
+          () => controller.isGameOver.value
+              ? AlertDialog(
+                  title: Text(
+                    'Game is Over!',
+                    style: kLargeTitleStyle.copyWith(
+                      color: Colors.black,
+                    ),
+                  ),
+                  content: Text(
+                    'The game is over. Press Restart to new start new game.',
+                    style: kSmallTitleStyle.copyWith(
+                        color: Colors.black, fontWeight: FontWeight.w500),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        controller.restartGame();
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Restart'),
+                    ),
+                  ],
+                ) : AlertDialog(
+            title: Text(
+              'Game Paused',
+              style: kLargeTitleStyle.copyWith(
+                color: Colors.black,
+              ),
             ),
-            TextButton(
-              onPressed: () {
-                controller.restartGame();
-                Navigator.pop(context);
-              },
-              child: const Text('Restart'),
+            content: Text(
+              'The game is paused. Press Resume to continue.',
+              style: kSmallTitleStyle.copyWith(
+                  color: Colors.black, fontWeight: FontWeight.w500),
             ),
-          ],
+            actions: [
+              TextButton(
+                onPressed: () {
+                  controller.resumeTimer();
+                  Navigator.pop(context);
+                },
+                child: const Text('Resume'),
+              ),
+              TextButton(
+                onPressed: () {
+                  controller.restartGame();
+                  Navigator.pop(context);
+                },
+                child: const Text('Restart'),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -181,14 +204,14 @@ class SudokuScreen extends StatelessWidget {
         content: 'The solution is incorrect.',
       );
     } else {
-      // Trigger confetti and show success dialog
-      controller.showConfettiEffect();
-      _showResultDialog(
-        context: context,
-        title: 'Success',
-        content: 'Congratulations! The solution is correct.',
-        onClose: () => controller.showConfetti(false),
-      );
+    // Trigger confetti and show success dialog
+    controller.celebrate();
+    _showResultDialog(
+      context: context,
+      title: 'Success',
+      content: 'Congratulations! The solution is correct.',
+      onClose: () => controller.showConfetti(false),
+    );
     }
   }
 
@@ -211,9 +234,7 @@ class SudokuScreen extends StatelessWidget {
           content: Text(
             content,
             style: kSmallTitleStyle.copyWith(
-              color: Colors.black,
-              fontWeight: FontWeight.w500
-            ),
+                color: Colors.black, fontWeight: FontWeight.w500),
           ),
           actions: [
             TextButton(
