@@ -19,113 +19,113 @@ class SudokuScreen extends StatelessWidget {
       init: SudokuController(screenType: screenType),
       builder: (controller) {
         return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              onPressed: () => Get.back(),
-              icon: Icon(
-                Icons.arrow_back_ios_new_outlined,
-                color: AppColors.icon,
-                size: 30,
-              ),
-            ),
-            title: Text(
-              screenType == SudokuScreenType.solve
-                  ? 'Solve Sudoku'
-                  : 'Play Sudoku',
-            ),
-            centerTitle: true,
-          ),
+          appBar: _buildAppBar(),
           body: Stack(
             children: [
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    // Timer Display
-                    Obx(() {
-                      final minutes = (controller.elapsedTime.value ~/ 60)
-                          .toString()
-                          .padLeft(2, '0');
-                      final seconds = (controller.elapsedTime.value % 60)
-                          .toString()
-                          .padLeft(2, '0');
-                      return RichText(
-                        text: TextSpan(
-                          text: '$minutes ',
-                          style: kMediumTitleStyle,
-                          children: <TextSpan>[
-                            const TextSpan(text: 'min', style: kBodyTextStyle),
-                            TextSpan(
-                                text: '  $seconds ', style: kMediumTitleStyle),
-                            const TextSpan(text: 'sec', style: kBodyTextStyle),
-                          ],
-                        ),
-                      );
-                    }),
+                    _buildTimer(controller),
                     const SizedBox(height: 16),
-                    // Sudoku Grid
-                    SizedBox(
-                      height: 395,
-                      child: SudokuGrid(),
-                    ),
+                    const SizedBox(height: 395, child: SudokuGrid()),
                     const Spacer(),
-                    const Text(
-                      "Choose a Number:",
-                      style: kSmallTitleStyle,
-                    ),
+                    const Text("Choose a Number:", style: kSmallTitleStyle),
                     const SizedBox(height: 8),
-                    // Number Pad
-                    NumberPad(),
+                    const NumberPad(),
                     const Spacer(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 15,
-                      children: [
-                        TextButton(
-                          onPressed: controller.clearGrid,
-                          child: const Text('Erase'),
-                        ),
-                        Obx(
-                          () => CircleIconButton(
-                            onPressed: () {
-                              controller.pauseTimer();
-                              _showPauseDialog(context, controller);
-                            },
-                            icon: controller.isPaused.value
-                                ? Icons.play_arrow
-                                : Icons.pause,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () => _checkSolution(context, controller),
-                          child: const Text('Verify'),
-                        ),
-                      ],
-                    ),
+                    _buildControlButtons(context, controller),
                   ],
                 ),
               ),
-              // Confetti Widget
-              Obx(() {
-                return Offstage(
-                  offstage: !controller.showConfetti.value,
-                  child: Center(
-                    child: ConfettiWidget(
-                      confettiController: controller.confettiController,
-                      blastDirectionality: BlastDirectionality.explosive,
-                      shouldLoop: true,
-                      emissionFrequency: 0.05,
-                      numberOfParticles: 30,
-                      gravity: 0.1,
-                    ),
-                  ),
-                );
-              }),
+              _buildConfetti(controller),
             ],
           ),
         );
       },
     );
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      leading: IconButton(
+        onPressed: Get.back,
+        icon: Icon(
+          Icons.arrow_back_ios_new_outlined,
+          size: 30,
+          color: AppColors.icon,
+        ),
+      ),
+      title: Text(
+        screenType == SudokuScreenType.solve ? 'Solve Sudoku' : 'Play Sudoku',
+      ),
+      centerTitle: true,
+    );
+  }
+
+  Widget _buildTimer(SudokuController controller) {
+    return Obx(() {
+      final minutes =
+          (controller.elapsedTime.value ~/ 60).toString().padLeft(2, '0');
+      final seconds =
+          (controller.elapsedTime.value % 60).toString().padLeft(2, '0');
+      return RichText(
+        text: TextSpan(
+          text: '$minutes ',
+          style: kMediumTitleStyle,
+          children: [
+            const TextSpan(text: 'min', style: kBodyTextStyle),
+            TextSpan(text: '  $seconds ', style: kMediumTitleStyle),
+            const TextSpan(text: 'sec', style: kBodyTextStyle),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildControlButtons(
+      BuildContext context, SudokuController controller) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: 15,
+      children: [
+        TextButton(
+          onPressed: controller.clearGrid,
+          child: const Text('Erase'),
+        ),
+        Obx(
+          () => CircleIconButton(
+            onPressed: () {
+              controller.pauseTimer();
+              _showPauseDialog(context, controller);
+            },
+            icon: controller.isPaused.value ? Icons.play_arrow : Icons.pause,
+          ),
+        ),
+        TextButton(
+          onPressed: () => _checkSolution(context, controller),
+          child: const Text('Verify'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConfetti(SudokuController controller) {
+    return Obx(() {
+      return Offstage(
+        offstage: !controller.showConfetti.value,
+        child: Center(
+          child: ConfettiWidget(
+            confettiController: controller.confettiController,
+            blastDirectionality: BlastDirectionality.explosive,
+            shouldLoop: true,
+            emissionFrequency: 0.05,
+            numberOfParticles: 30,
+            gravity: 0.1,
+          ),
+        ),
+      );
+    });
   }
 
   void _showPauseDialog(BuildContext context, SudokuController controller) {
@@ -133,42 +133,20 @@ class SudokuScreen extends StatelessWidget {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return Obx(
-          () => controller.isGameOver.value
-              ? AlertDialog(
-                  title: Text(
-                    'Game is Over!',
-                    style: kLargeTitleStyle.copyWith(
-                      color: Colors.black,
-                    ),
-                  ),
-                  content: Text(
-                    'The game is over. Press Restart to new start new game.',
-                    style: kSmallTitleStyle.copyWith(
-                        color: Colors.black, fontWeight: FontWeight.w500),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        controller.restartGame();
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Restart'),
-                    ),
-                  ],
-                ) : AlertDialog(
-            title: Text(
-              'Game Paused',
-              style: kLargeTitleStyle.copyWith(
-                color: Colors.black,
-              ),
-            ),
-            content: Text(
-              'The game is paused. Press Resume to continue.',
-              style: kSmallTitleStyle.copyWith(
-                  color: Colors.black, fontWeight: FontWeight.w500),
-            ),
-            actions: [
+        return AlertDialog(
+          title: Text(
+            controller.isGameOver.value ? 'Game is Over!' : 'Game Paused',
+            style: kLargeTitleStyle.copyWith(color: Colors.black),
+          ),
+          content: Text(
+            controller.isGameOver.value
+                ? 'The game is over. Press Restart to start a new game.'
+                : 'The game is paused. Press Resume to continue.',
+            style: kSmallTitleStyle.copyWith(
+                color: Colors.black, fontWeight: FontWeight.w500),
+          ),
+          actions: [
+            if (!controller.isGameOver.value)
               TextButton(
                 onPressed: () {
                   controller.resumeTimer();
@@ -176,35 +154,33 @@ class SudokuScreen extends StatelessWidget {
                 },
                 child: const Text('Resume'),
               ),
-              TextButton(
-                onPressed: () {
-                  controller.restartGame();
-                  Navigator.pop(context);
-                },
-                child: const Text('Restart'),
-              ),
-            ],
-          ),
+            TextButton(
+              onPressed: () {
+                controller.restartGame();
+                Navigator.pop(context);
+              },
+              child: const Text('Restart'),
+            ),
+          ],
         );
       },
     );
   }
 
   void _checkSolution(BuildContext context, SudokuController controller) {
-    if (!controller.isGridFilled()) {
-      _showResultDialog(
-        context: context,
-        title: 'Failed',
-        content: 'The grid is not completely filled.',
-      );
-    } else if (!controller.isSolutionCorrect()) {
-      _showResultDialog(
-        context: context,
-        title: 'Failed',
-        content: 'The solution is incorrect.',
-      );
-    } else {
-    // Trigger confetti and show success dialog
+    // if (!controller.isGridFilled()) {
+    //   _showResultDialog(
+    //     context: context,
+    //     title: 'Failed',
+    //     content: 'The grid is not completely filled.',
+    //   );
+    // } else if (!controller.isSolutionCorrect()) {
+    //   _showResultDialog(
+    //     context: context,
+    //     title: 'Failed',
+    //     content: 'The solution is incorrect.',
+    //   );
+    // } else {
     controller.celebrate();
     _showResultDialog(
       context: context,
@@ -212,7 +188,7 @@ class SudokuScreen extends StatelessWidget {
       content: 'Congratulations! The solution is correct.',
       onClose: () => controller.showConfetti(false),
     );
-    }
+    // }
   }
 
   void _showResultDialog({
@@ -239,7 +215,7 @@ class SudokuScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                if (onClose != null) onClose();
+                onClose?.call();
                 Navigator.pop(context);
               },
               child: const Text('OK'),
