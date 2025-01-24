@@ -24,8 +24,9 @@ class SudokuController extends GetxController with GetSingleTickerProviderStateM
   late AnimationController animationController;
   late Animation<double> tileAnimation;
 
-  // Confetti controller
+  /// Confetti-related variables
   late ConfettiController confettiController;
+  var showConfetti = false.obs;
 
   // Timer-related variables
   var elapsedTime = 0.obs; // Time in seconds
@@ -226,18 +227,16 @@ class SudokuController extends GetxController with GetSingleTickerProviderStateM
     }
   }
 
-  // Celebrate with confetti
-  void celebrate() {
+  void showConfettiEffect() {
+    showConfetti.value = true;
     confettiController.play();
   }
 
-  // Clear the grid (only for "Solve" mode)
+  // Clear the grid
   void clearGrid() {
-    if (screenType == SudokuScreenType.solve) {
-      grid.value = List.generate(9, (_) => List.generate(9, (_) => 0));
-      selectedRow.value = -1;
-      selectedCol.value = -1;
-    }
+    grid.value = List.generate(9, (_) => List.generate(9, (_) => 0));
+    selectedRow.value = -1;
+    selectedCol.value = -1;
   }
 }
 
