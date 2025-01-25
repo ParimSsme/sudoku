@@ -4,7 +4,6 @@ import '../../core/theme/app_colors.dart';
 import '../controllers/sudoku_controller.dart';
 
 class NumberPad extends GetView<SudokuController> {
-
   const NumberPad({super.key});
 
   @override
@@ -34,26 +33,27 @@ class NumberPad extends GetView<SudokuController> {
 
   // Helper method to build a single button
   Widget _buildNumberButton(int number) {
-    return GestureDetector(
-      onTap: () => controller.updateTile(number),
-      child: Container(
-        width: 60, // Fixed width for uniform button size
-        height: 60,
-        margin: const EdgeInsets.symmetric(horizontal: 4.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: AppColors.border,
-            width: 2,
-          )
-        ),
-        child: Center(
-          child: Text(
-            number.toString(),
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+    return Obx(
+      () => GestureDetector(
+        onTap: controller.isGameOver.value ? null : () => controller.updateTile(number),
+        child: Container(
+          width: 60, // Fixed width for uniform button size
+          height: 60,
+          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppColors.border,
+                width: 2,
+              )),
+          child: Center(
+            child: Text(
+              number.toString(),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
@@ -61,4 +61,3 @@ class NumberPad extends GetView<SudokuController> {
     );
   }
 }
-
